@@ -5,6 +5,7 @@
 #state {
   width: 200px;
   float: left;
+  background-color: darkgray;
 }
 
 #map {
