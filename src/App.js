@@ -6,6 +6,7 @@ class App extends Component {
         state = {
             map : {},
             zoom: 12,
+            infoWindow : new window.google.maps.InfoWindow(),
             maptype: 'roadmap',
             openWindow : false,
             markers : [],
@@ -81,20 +82,18 @@ class App extends Component {
         let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
         let url = "https://api.foursquare.com/v2/venues/search?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1";
         console.log(marker.position.lat());
-        fetch(url).then(data => data.json()).then(item => console.log(item.response.venues[0].id));
-
-
-    }
-
-    getTips (marker) {
-        let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
-        let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
-        let url = "https://api.foursquare.com/v2/venues/4f2c0acae4b048e466df240b/tips?client_id=" + clientID + "&client_secret=" + clientSecret + "&ll=" + "51.501816" + "," + "-0.162474" + "&limit=1";
-
         fetch(url).then(data => data.json()).then(item => console.log(item));
-
-
     }
+
+    // getTips (marker) {
+    //     let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
+    //     let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
+    //     let url = "https://api.foursquare.com/v2/venues/4f2c0acae4b048e466df240b/tips?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1";
+    //
+    //     fetch(url).then(data => data.json()).then(response => response.tips.items[0].text);
+    //
+    //
+    // }
     makeMarkers (locations , map) {
         let markers = [];
         let joystick = this;
@@ -103,9 +102,6 @@ class App extends Component {
             let title = locations[i].name;
             let id = locations[i].id;
 
-            // let infowindow = new window.google.maps.InfoWindow({
-            //     content: title
-            // });
             let marker = new window.google.maps.Marker({
                 map : map,
                 position : position,
@@ -114,31 +110,35 @@ class App extends Component {
                 id : id,
             });
 
+            let info = joystick.populateInfoWindow(marker);
+
             marker.addListener('click', function() {
-                joystick.openWindow(marker)
+                if(joystick.state.currentMarker !== marker) {
+                    marker.setAnimation(null);
+                }
+                info.open(map,marker);
                 joystick.getMarkerInfo(marker);
             });
-            marker.addListener('closeclick', function() {
-                joystick.closeWindow(marker);
-            });
-            marker.addListener('click', toggleBounce);
 
-            function toggleBounce() {
-                if (marker.getAnimation() !== null) {
-                    marker.setAnimation(null);
-                } else {
-                    marker.setAnimation(window.google.maps.Animation.BOUNCE);
-                }
-            }
+            marker.addListener('closeclick', function() {
+                info.close();
+            });
+
+
+            map.addListener('click',function () {
+                info.close()
+            });
             markers.push(marker);
         }
         this.setState({markers});
     };
 
-    findMarker = (id) => {
-        document.getElementById(id).className = 'testing';
-        };
-
+    populateInfoWindow = (marker) => {
+        let { infoWindow } = this.state;
+        let text = this.getMarkerInfo(marker);
+        infoWindow.setContent(text);
+        return infoWindow;
+    };
 
     openWindow = (marker) => {
             // let marker = this.state.markers.findIndex(event.target. =>)
@@ -146,8 +146,8 @@ class App extends Component {
             openWindow: true,
             currentMarker: marker,
         });
-        console.log(marker);
-        this.getMarkerInfo(marker)
+        console.log("OpenWindow = " + marker);
+        // this.getMarkerInfo(marker)
     };
     closeWindow = (marker) => {
         this.setState({
@@ -196,7 +196,6 @@ class App extends Component {
                     <h1 onClick={() => console.log(this.state.markers)}>State</h1>
                     <p>
                         Zoom level: {this.state.zoom}<br />
-                        Map type: {this.state.maptype}<br />
                         Map type: {this.state.maptype}<br />
                         Map type: {console.log(this.state.markers)}<br />
                         Marker : {this.state.currentMarker ? this.state.currentMarker.title : "Can't load the marker"}
