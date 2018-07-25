@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import './App.css';
+import ListItem from "./ListItem";
 
 class App extends Component {
         state = {
@@ -77,13 +78,15 @@ class App extends Component {
                 }
             ]
         }
-    getMarkerInfo (marker) {
-        let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
-        let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
-        let url = "https://api.foursquare.com/v2/venues/search?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1";
-        console.log(marker.position.lat());
-        fetch(url).then(data => data.json()).then(item => console.log(item));
-    }
+    // getMarkerInfo (marker) {
+    //     let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
+    //     let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
+    //     console.log(marker.id);
+    //     let venueId = marker.id;
+    //     let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
+    //     console.log(marker.position.lat());
+    //     fetch(url).then(data => data.json()).then(item => console.log(item));
+    // }
 
     // getTips (marker) {
     //     let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
@@ -116,17 +119,27 @@ class App extends Component {
                 if(joystick.state.currentMarker !== marker) {
                     marker.setAnimation(null);
                 }
+                joystick.setState({
+                    currentMarker : marker,
+                });
                 info.open(map,marker);
-                joystick.getMarkerInfo(marker);
+
+                // joystick.getMarkerInfo(marker);
             });
 
             marker.addListener('closeclick', function() {
                 info.close();
+                joystick.setState({
+                    currentMarker : null,
+                });
             });
 
 
             map.addListener('click',function () {
                 info.close()
+                this.setState({
+                    currentMarker : null,
+                });
             });
             markers.push(marker);
         }
@@ -134,8 +147,10 @@ class App extends Component {
     };
 
     populateInfoWindow = (marker) => {
-        let { infoWindow } = this.state;
-        let text = this.getMarkerInfo(marker);
+        let { infoWindow , currentMarker } = this.state;
+        // let text = this.getMarkerInfo(marker);
+        let text = currentMarker ? currentMarker.title : "No title";
+        console.log(infoWindow.marker);
         infoWindow.setContent(text);
         return infoWindow;
     };
@@ -155,6 +170,23 @@ class App extends Component {
             currentMarker: null
         });
         console.log(marker);
+    };
+
+    findAllMarkers = () => {
+        const { markers }  = this.state;
+        let filtered = markers.map(marker => marker.findIndex(item => item.id === marker.id))
+        console.log(filtered)
+    };
+    displayInfowindow = (e) => {
+        const { markers } = this.state;
+        console.log(markers)
+        const markerIndex =
+            markers.findIndex(marker => marker.title.toLowerCase() === e.target.innerText.toLowerCase());
+        console.log(markerIndex);
+    };
+    findMarker = (event) => {
+        let found = this.state.markers.findIndex(item => event.target.innerHTML === item.title);
+        console.log(found);
     };
 
     componentDidMount() {
@@ -194,6 +226,9 @@ class App extends Component {
             <div id='app'>
                 <div id='state'>
                     <h1 onClick={() => console.log(this.state.markers)}>State</h1>
+                    <input role="search" type='text'
+                           value={this.state.value}
+                           onChange={this.handleValueChange}/>
                     <p>
                         Zoom level: {this.state.zoom}<br />
                         Map type: {this.state.maptype}<br />
@@ -201,14 +236,18 @@ class App extends Component {
                         Marker : {this.state.currentMarker ? this.state.currentMarker.title : "Can't load the marker"}
                     </p>
                     <div>
-                        {this.state.markers.map( (marker) => {
+                        <ul className={'locations__list'}>
+                        {this.state.markers.map((marker) => {
                             return (
-                                <h2
-                                    key={marker.id}
-                                    onClick={(marker) => this.openWindow(marker)}
-                                >{marker.title}</h2>
+                                <ListItem
+                                    key = {marker.id}
+                                    ident = {marker.id}
+                                    title = {marker.title}
+                                    handler = {(e) => this.displayInfowindow(e)}
+                                />
                             )
                         })}
+                        </ul>
                     </div>
                 </div>
                 <div id='map' />
