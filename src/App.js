@@ -101,6 +101,7 @@ class App extends Component {
         for(let i = 0;i < locations.length;i++){
             let position = locations[i].location;
             let title = locations[i].name;
+            let id = locations[i].id;
 
             // let infowindow = new window.google.maps.InfoWindow({
             //     content: title
@@ -110,7 +111,7 @@ class App extends Component {
                 position : position,
                 title : title,
                 animation : window.google.maps.Animation.DROP,
-                id : i,
+                id : id,
             });
 
             marker.addListener('click', function() {
@@ -131,11 +132,11 @@ class App extends Component {
             }
             markers.push(marker);
         }
-        this.setState({markers:markers});
+        this.setState({markers});
     };
-    testFunction = () => {
-        let { markers } = this.state.markers;
-        console.log(markers);
+
+    findMarker = (id) => {
+        document.getElementById(id).className = 'testing';
         };
 
 
@@ -154,12 +155,6 @@ class App extends Component {
             currentMarker: null
         });
         console.log(marker);
-    };
-
-    clearMarkers = () => {
-        debugger;
-        const { locations } = this.state.locations;
-        console.log(locations);
     };
 
     componentDidMount() {
@@ -184,32 +179,35 @@ class App extends Component {
         });
 
         map.addListener('click', () => {
+            let array = this.state.markers;
+            array.forEach((marker) => marker.setAnimation(null));
             this.setState({
                 currentMarker : null,
             });
         });
         this.makeMarkers(locations, map);
         // this.getTips();
-        this.testFunction()
     }
     render() {
         const { locations  } = this.state;
         return (
             <div id='app'>
                 <div id='state'>
-                    <h1 onClick={() => this.clearMarkers()}>State</h1>
+                    <h1 onClick={() => console.log(this.state.markers)}>State</h1>
                     <p>
                         Zoom level: {this.state.zoom}<br />
                         Map type: {this.state.maptype}<br />
+                        Map type: {this.state.maptype}<br />
+                        Map type: {console.log(this.state.markers)}<br />
                         Marker : {this.state.currentMarker ? this.state.currentMarker.title : "Can't load the marker"}
                     </p>
                     <div>
-                        {locations.map( (place) => {
+                        {this.state.markers.map( (marker) => {
                             return (
                                 <h2
-                                    key={place.name}
+                                    key={marker.id}
                                     onClick={(marker) => this.openWindow(marker)}
-                                >{place.name}</h2>
+                                >{marker.title}</h2>
                             )
                         })}
                     </div>
