@@ -126,12 +126,12 @@ class App extends Component {
                 if(joystick.state.currentMarker !== marker) {
                     marker.setAnimation(null);
                 }
-                if(joystick.state.currentMarker){
-                    joystick.getExactVenue(joystick.state.currentMarker);
-                }
                 joystick.setState({
                     currentMarker : marker,
                 });
+                if(joystick.state.currentMarker){
+                    joystick.getExactVenue(joystick.state.currentMarker);
+                }
                 joystick.populateInfoWindow(joystick.state.currentMarker);
                 infoWindow.open(map,joystick.state.currentMarker);
 
@@ -156,8 +156,9 @@ class App extends Component {
         this.setState({markers});
     };
 
-    populateInfoWindow = (currentMarker) => {
+    populateInfoWindow = () => {
         let { infoWindow , info } = this.state;
+        this.getExactVenue();
         let text;
         console.log(this.state.info);
         if (this.state.currentMarker && this.state.info) {
