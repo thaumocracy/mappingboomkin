@@ -9,8 +9,8 @@ class App extends Component {
             map : {},
             zoom: 12,
             infoWindow : new window.google.maps.InfoWindow(),
+            info : '',
             maptype: 'roadmap',
-            openWindow : false,
             markers : [],
             currentMarker : null,
             locations : [
@@ -70,13 +70,6 @@ class App extends Component {
                     'streetAddress': "Unit 1 115 Meridian Place Marsh Wall London E14 9FE United Kingdom",
                     "id" : "4b851c53f964a520684c31e3",
                 },
-                {
-                    'name': "The Merchant’s Yard",
-                    'type': "bakery",
-                    'location' : {lat:51.497431 , lng : -0.164639 },
-                    'streetAddress': "Unit 1 115 Meridian Place Marsh Wall London E14 9FE United Kingdom",
-                    "id" : "4ac518e0f964a52015aa20e3",
-                }
             ]
         };
     // getMarkerInfo (marker) {
@@ -84,10 +77,25 @@ class App extends Component {
     //     let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
     //     console.log(marker.id);
     //     let venueId = marker.id;
-    //     let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
+    //     // let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
     //     console.log(marker.position.lat());
     //     fetch(url).then(data => data.json()).then(item => console.log(item));
     // }
+    getExactVenue (currentMarker) {
+        if(this.state.currentMarker){
+            let venueID = this.state.currentMarker.id
+            let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
+            let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
+            let url = `https://api.foursquare.com/v2/venues/${venueID}/likes?client_id=${clientID}&client_secret=${clientSecret}&v=20180505`;
+            // let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
+            fetch(url).then(response => response.json()).then((data) => {
+                let likes = data.response;
+                this.setState({ info : String(likes.likes.count)})
+            });
+        }
+    }
+
+
 
     // getTips (marker) {
     //     let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
@@ -118,6 +126,9 @@ class App extends Component {
                 if(joystick.state.currentMarker !== marker) {
                     marker.setAnimation(null);
                 }
+                if(joystick.state.currentMarker){
+                    joystick.getExactVenue(joystick.state.currentMarker);
+                }
                 joystick.setState({
                     currentMarker : marker,
                 });
@@ -134,24 +145,26 @@ class App extends Component {
                 });
             });
 
-
-            map.addListener('click',function () {
-                infoWindow.close();
-                joystick.setState({
-                    currentMarker : null,
-                });
-            });
             markers.push(marker);
         }
+        map.addListener('click',function () {
+            infoWindow.close();
+            joystick.setState({
+                currentMarker : null,
+            });
+        });
         this.setState({markers});
     };
 
     populateInfoWindow = (currentMarker) => {
-        let { infoWindow } = this.state;
-        // let text = this.getMarkerInfo(marker);
-        let text = currentMarker ? currentMarker.title : "No title";
-        console.log("Current Marker is "  + (currentMarker ? currentMarker.title : "Not loaded"));
-        console.log(infoWindow);
+        let { infoWindow , info } = this.state;
+        let text;
+        console.log(this.state.info);
+        if (this.state.currentMarker && this.state.info) {
+            text = `${info} people like this place!`
+        } else {
+            text = "Likes is Unknown"
+        }
         infoWindow.setContent(text);
         return infoWindow;
     };
