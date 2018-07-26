@@ -5,6 +5,7 @@ import ListItem from "./ListItem";
 
 class App extends Component {
         state = {
+            query: "",
             map : {},
             zoom: 12,
             infoWindow : new window.google.maps.InfoWindow(),
@@ -155,29 +156,6 @@ class App extends Component {
         return infoWindow;
     };
 
-    openWindow = (marker) => {
-            // let marker = this.state.markers.findIndex(event.target. =>)
-        this.setState({
-            openWindow: true,
-            currentMarker: marker,
-        });
-        console.log("OpenWindow = " + marker);
-        // this.getMarkerInfo(marker)
-    };
-    closeWindow = (marker) => {
-        this.setState({
-            openWindow: false,
-            currentMarker: null
-        });
-        console.log(marker);
-    };
-
-    findAllMarkers = () => {
-        const { markers }  = this.state;
-        let filtered = markers.map(marker => marker.findIndex(item => item.id === marker.id))
-        console.log(filtered)
-    };
-
     displayInfowindow = (event) => {
         const { markers , infoWindow } = this.state;
         console.log(markers);
@@ -190,6 +168,10 @@ class App extends Component {
             infoWindow.open(this.state.map, this.state.currentMarker);
         }
         console.log(this.state.markers[markerIndex]);
+    };
+
+    handleValueChange = (event) => {
+        this.setState({query: event.target.value})
     };
 
     componentDidMount() {
@@ -224,7 +206,27 @@ class App extends Component {
         // this.getTips();
     }
     render() {
-        const { locations  } = this.state;
+        let { query , markers , currentMarker , locations} = this.state;
+        if (query) {
+            locations.forEach((location, index) => {
+                if (location.name.toLowerCase().includes(query.toLowerCase())) {
+                    markers[index].setVisible(true)
+                } else {
+                    if (currentMarker === markers[index]) {
+                        this.setState({
+                            currentMarkers:null
+                        })
+                    }
+                    markers[index].setVisible(false)
+                }
+            })
+        } else {
+            locations.forEach((location, index) => {
+                if (markers.length && markers[index]) {
+                    markers[index].setVisible(true)
+                }
+            })
+        }
         return (
             <div id='app'>
                 <div id='state'>
@@ -233,6 +235,7 @@ class App extends Component {
                            value={this.state.value}
                            onChange={this.handleValueChange}/>
                     <p>
+                        Search query: {this.state.query}<br />
                         Zoom level: {this.state.zoom}<br />
                         Map type: {this.state.maptype}<br />
                         Map type: {console.log(this.state.markers)}<br />
@@ -240,7 +243,7 @@ class App extends Component {
                     </p>
                     <div>
                         <ul className={'locations__list'}>
-                        {this.state.markers.map((marker) => {
+                        {this.state.markers.filter(item => item.title.toLowerCase().includes(query.toLowerCase())).map((marker) => {
                             return (
                                 <ListItem
                                     key = {marker.id}
