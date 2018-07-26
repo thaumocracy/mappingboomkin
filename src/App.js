@@ -77,7 +77,7 @@ class App extends Component {
                     "id" : "4ac518e0f964a52015aa20e3",
                 }
             ]
-        }
+        };
     // getMarkerInfo (marker) {
     //     let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
     //     let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
@@ -98,6 +98,7 @@ class App extends Component {
     //
     // }
     makeMarkers (locations , map) {
+        let { infoWindow } = this.state;
         let markers = [];
         let joystick = this;
         for(let i = 0;i < locations.length;i++){
@@ -112,9 +113,6 @@ class App extends Component {
                 animation : window.google.maps.Animation.DROP,
                 id : id,
             });
-
-            let info = joystick.populateInfoWindow(marker);
-
             marker.addListener('click', function() {
                 if(joystick.state.currentMarker !== marker) {
                     marker.setAnimation(null);
@@ -122,13 +120,14 @@ class App extends Component {
                 joystick.setState({
                     currentMarker : marker,
                 });
-                info.open(map,marker);
+                joystick.populateInfoWindow(joystick.state.currentMarker);
+                infoWindow.open(map,joystick.state.currentMarker);
 
                 // joystick.getMarkerInfo(marker);
             });
 
             marker.addListener('closeclick', function() {
-                info.close();
+                infoWindow.close();
                 joystick.setState({
                     currentMarker : null,
                 });
@@ -136,8 +135,8 @@ class App extends Component {
 
 
             map.addListener('click',function () {
-                info.close()
-                this.setState({
+                infoWindow.close();
+                joystick.setState({
                     currentMarker : null,
                 });
             });
@@ -146,11 +145,12 @@ class App extends Component {
         this.setState({markers});
     };
 
-    populateInfoWindow = (marker) => {
-        let { infoWindow , currentMarker } = this.state;
+    populateInfoWindow = (currentMarker) => {
+        let { infoWindow } = this.state;
         // let text = this.getMarkerInfo(marker);
         let text = currentMarker ? currentMarker.title : "No title";
-        console.log(infoWindow.marker);
+        console.log("Current Marker is "  + (currentMarker ? currentMarker.title : "Not loaded"));
+        console.log(infoWindow);
         infoWindow.setContent(text);
         return infoWindow;
     };
@@ -177,16 +177,19 @@ class App extends Component {
         let filtered = markers.map(marker => marker.findIndex(item => item.id === marker.id))
         console.log(filtered)
     };
-    displayInfowindow = (e) => {
-        const { markers } = this.state;
-        console.log(markers)
-        const markerIndex =
-            markers.findIndex(marker => marker.title.toLowerCase() === e.target.innerText.toLowerCase());
-        console.log(markerIndex);
-    };
-    findMarker = (event) => {
-        let found = this.state.markers.findIndex(item => event.target.innerHTML === item.title);
-        console.log(found);
+
+    displayInfowindow = (event) => {
+        const { markers , infoWindow } = this.state;
+        console.log(markers);
+        const markerIndex = markers.findIndex(marker => marker.title.toLowerCase() === event.target.innerText.toLowerCase());
+        this.populateInfoWindow(this.state.currentMarker);
+        this.setState({
+            currentMarker:markers[markerIndex]
+        });
+        if(this.state.currentMarker) {
+            infoWindow.open(this.state.map, this.state.currentMarker);
+        }
+        console.log(this.state.markers[markerIndex]);
     };
 
     componentDidMount() {

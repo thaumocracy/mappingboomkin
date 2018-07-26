@@ -1,17 +1,14 @@
 import React, { Component } from 'react'
 
 class ListItem extends Component {
-    constructor(props){
-        super(props)
-    }
     render() {
-    const { title , ident , handler } = this.props;
+    const { title  , handler } = this.props;
 
         return (
-            <li 
+            <li
                 className="list__item"
                 onClick={(e) => handler(e)}
-            >{this.props.title}</li>
+            >{title}</li>
         )
     }
 
