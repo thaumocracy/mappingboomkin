@@ -9,7 +9,6 @@ class App extends Component {
             map : {},
             zoom: 12,
             infoWindow : new window.google.maps.InfoWindow(),
-            info : '1',
             maptype: 'roadmap',
             markers : [],
             currentMarker : null,
@@ -75,26 +74,22 @@ class App extends Component {
 
     getExactVenue () {
         if(this.state.currentMarker){
+            let { infoWindow } = this.state
             let venueID = this.state.currentMarker.id;
             let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
             let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
             let url = `https://api.foursquare.com/v2/venues/${venueID}/likes?client_id=${clientID}&client_secret=${clientSecret}&v=20180505`;
             // let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
             fetch(url).then(response => response.json()).then((data) => {
-                this.setState({ info : data.response.likes.count})
+                infoWindow.setContent(data.response.likes.summary);
             });
         }
     }
     useLikes () {
         let { infoWindow } = this.state;
-        if(this.state.currentMarker){
-            console.log("Before = " + this.state.info);
+        if(this.state.currentMarker ){
             this.getExactVenue();
-            console.log("After fetch = " + this.state.info);
-            console.log("After populate = " + this.state.info);
-            infoWindow.setContent(this.populateInfoWindow());
             infoWindow.open(this.state.map,this.state.currentMarker);
-            console.log("After all = " + this.state.info);
         }
     }
 
@@ -130,7 +125,6 @@ class App extends Component {
                 infoWindow.close();
                 joystick.setState({
                     currentMarker : null,
-                    info:null,
                 });
             });
 
@@ -140,22 +134,21 @@ class App extends Component {
             infoWindow.close();
             joystick.setState({
                 currentMarker : null,
-                info : null
             });
         });
         this.setState({markers});
     };
 
-    populateInfoWindow = () => {
-        let { info } = this.state;
-        let text;
-        if (this.state.info !== null) {
-            text = `${info} people like this place!`
-        } else {
-            text = "Sorry,likes is not loaded"
-        }
-        return text;
-    };
+    // populateInfoWindow = () => {
+    //     let { info } = this.state;
+    //     let text;
+    //     if (this.state.info !== null) {
+    //         text = `${info} people like this place!`
+    //     } else {
+    //         text = "Sorry,likes is not loaded"
+    //     }
+    //     return text;
+    // };
 
     displayInfowindow = (event) => {
         const { markers , infoWindow } = this.state;
