@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import './App.css';
-import ListItem from "./ListItem";
+import ListItem from "./components/ListItem";
 
 class App extends Component {
         state = {
@@ -9,7 +9,7 @@ class App extends Component {
             map : {},
             zoom: 12,
             infoWindow : new window.google.maps.InfoWindow(),
-            info : '',
+            info : '1',
             maptype: 'roadmap',
             markers : [],
             currentMarker : null,
@@ -72,40 +72,32 @@ class App extends Component {
                 },
             ]
         };
-    // getMarkerInfo (marker) {
-    //     let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
-    //     let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
-    //     console.log(marker.id);
-    //     let venueId = marker.id;
-    //     // let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
-    //     console.log(marker.position.lat());
-    //     fetch(url).then(data => data.json()).then(item => console.log(item));
-    // }
-    getExactVenue (currentMarker) {
+
+    getExactVenue () {
         if(this.state.currentMarker){
-            let venueID = this.state.currentMarker.id
+            let venueID = this.state.currentMarker.id;
             let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
             let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
             let url = `https://api.foursquare.com/v2/venues/${venueID}/likes?client_id=${clientID}&client_secret=${clientSecret}&v=20180505`;
             // let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
             fetch(url).then(response => response.json()).then((data) => {
-                let likes = data.response;
-                this.setState({ info : String(likes.likes.count)})
+                this.setState({ info : data.response.likes.count})
             });
         }
     }
+    useLikes () {
+        let { infoWindow } = this.state;
+        if(this.state.currentMarker){
+            console.log("Before = " + this.state.info);
+            this.getExactVenue();
+            console.log("After fetch = " + this.state.info);
+            console.log("After populate = " + this.state.info);
+            infoWindow.setContent(this.populateInfoWindow());
+            infoWindow.open(this.state.map,this.state.currentMarker);
+            console.log("After all = " + this.state.info);
+        }
+    }
 
-
-
-    // getTips (marker) {
-    //     let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
-    //     let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
-    //     let url = "https://api.foursquare.com/v2/venues/4f2c0acae4b048e466df240b/tips?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1";
-    //
-    //     fetch(url).then(data => data.json()).then(response => response.tips.items[0].text);
-    //
-    //
-    // }
     makeMarkers (locations , map) {
         let { infoWindow } = this.state;
         let markers = [];
@@ -122,26 +114,23 @@ class App extends Component {
                 animation : window.google.maps.Animation.DROP,
                 id : id,
             });
+
             marker.addListener('click', function() {
                 if(joystick.state.currentMarker !== marker) {
                     marker.setAnimation(null);
+                    joystick.setState({info:null})
                 }
                 joystick.setState({
                     currentMarker : marker,
                 });
-                if(joystick.state.currentMarker){
-                    joystick.getExactVenue(joystick.state.currentMarker);
-                }
-                joystick.populateInfoWindow(joystick.state.currentMarker);
-                infoWindow.open(map,joystick.state.currentMarker);
-
-                // joystick.getMarkerInfo(marker);
+                joystick.useLikes();
             });
 
             marker.addListener('closeclick', function() {
                 infoWindow.close();
                 joystick.setState({
                     currentMarker : null,
+                    info:null,
                 });
             });
 
@@ -151,37 +140,33 @@ class App extends Component {
             infoWindow.close();
             joystick.setState({
                 currentMarker : null,
+                info : null
             });
         });
         this.setState({markers});
     };
 
     populateInfoWindow = () => {
-        let { infoWindow , info } = this.state;
-        this.getExactVenue();
+        let { info } = this.state;
         let text;
-        console.log(this.state.info);
-        if (this.state.currentMarker && this.state.info) {
+        if (this.state.info !== null) {
             text = `${info} people like this place!`
         } else {
-            text = "Likes is Unknown"
+            text = "Sorry,likes is not loaded"
         }
-        infoWindow.setContent(text);
-        return infoWindow;
+        return text;
     };
 
     displayInfowindow = (event) => {
         const { markers , infoWindow } = this.state;
-        console.log(markers);
         const markerIndex = markers.findIndex(marker => marker.title.toLowerCase() === event.target.innerText.toLowerCase());
-        this.populateInfoWindow(this.state.currentMarker);
+        this.populateInfoWindow();
         this.setState({
             currentMarker:markers[markerIndex]
         });
         if(this.state.currentMarker) {
             infoWindow.open(this.state.map, this.state.currentMarker);
         }
-        console.log(this.state.markers[markerIndex]);
     };
 
     handleValueChange = (event) => {
@@ -244,15 +229,15 @@ class App extends Component {
         return (
             <div id='app'>
                 <div id='state'>
-                    <h1 onClick={() => console.log(this.state.markers)}>State</h1>
+                    <h1>State</h1>
                     <input role="search" type='text'
                            value={this.state.value}
                            onChange={this.handleValueChange}/>
                     <p>
+                        Info : {this.state.info}<br />
                         Search query: {this.state.query}<br />
                         Zoom level: {this.state.zoom}<br />
                         Map type: {this.state.maptype}<br />
-                        Map type: {console.log(this.state.markers)}<br />
                         Marker : {this.state.currentMarker ? this.state.currentMarker.title : "Can't load the marker"}
                     </p>
                     <div>
@@ -263,7 +248,7 @@ class App extends Component {
                                     key = {marker.id}
                                     ident = {marker.id}
                                     title = {marker.title}
-                                    handler = {(e) => this.displayInfowindow(e)}
+                                    clickHandler = {(e) => this.displayInfowindow(e)}
                                 />
                             )
                         })}

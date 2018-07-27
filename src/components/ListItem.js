@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
+import './listItem.css'
 
 class ListItem extends Component {
     render() {
-    const { title  , handler } = this.props;
+    const { title  , clickHandler } = this.props;
 
         return (
             <li
                 className="list__item"
-                onClick={(e) => handler(e)}
+                onClick={(e) => clickHandler(e)}
             >{title}</li>
         )
     }
