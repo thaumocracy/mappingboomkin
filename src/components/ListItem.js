@@ -7,8 +7,15 @@ class ListItem extends Component {
 
         return (
             <li
+                tabIndex={'0'}
                 className="list__item"
                 onClick={(e) => clickHandler(e)}
+                onKeyPress={(e) => {
+                    if(e.key === "Enter"){
+                        clickHandler(e);
+                      }
+                    }
+                }
             >{title}</li>
         )
     }

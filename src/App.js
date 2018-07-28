@@ -73,6 +73,7 @@ class App extends Component {
         };
 
     getExactVenue () {
+        // checking current target and populate infoWindow with according content
         if(this.state.currentMarker){
             let { infoWindow } = this.state;
             let venueID = this.state.currentMarker.id;
@@ -82,6 +83,8 @@ class App extends Component {
             fetch(url).then(response => response.json()).then((data) => {
                 infoWindow.setContent(data.response.likes.summary);
                 infoWindow.open(this.state.map,this.state.currentMarker);
+            }).catch(function () {
+               infoWindow.setContent("Sorry data can't be loaded");
             });
         }
     }
@@ -92,6 +95,7 @@ class App extends Component {
     }
 
     makeMarkers (locations , map) {
+        // making and adding listeners to all markers
         let { infoWindow } = this.state;
         let markers = [];
         let joystick = this;
@@ -137,6 +141,7 @@ class App extends Component {
     };
 
     displayInfowindow = (event) => {
+        // finding the clicked marker and serve it with infoWindow
         const { markers } = this.state;
         const markerIndex = markers.findIndex(marker => marker.title.toLowerCase() === event.target.innerText.toLowerCase());
         this.setState({
@@ -184,6 +189,7 @@ class App extends Component {
     }
     render() {
         let { query , markers , currentMarker , locations} = this.state;
+        // renders (or not ) markers with correct query
         if (query) {
             locations.forEach((location, index) => {
                 if (location.name.toLowerCase().includes(query.toLowerCase())) {
@@ -205,22 +211,15 @@ class App extends Component {
             })
         }
         return (
-            <div id='app'>
+            <div id='app' role={'application'}>
                 <div id='state'>
-                    <h1>State</h1>
                     <input role="search" type='text'
                            value={this.state.value}
                            onChange={this.handleValueChange}
                            className={'search__bar'}
+                           placeholder={'Search ... '}
                     />
-                    <p>
-                        Info : {this.state.info}<br />
-                        Search query: {this.state.query}<br />
-                        Zoom level: {this.state.zoom}<br />
-                        Map type: {this.state.maptype}<br />
-                        Marker : {this.state.currentMarker ? this.state.currentMarker.title : "Can't load the marker"}
-                    </p>
-                    <div>
+                    <nav>
                         <ul className={'locations__list'}>
                         {this.state.markers.filter(item => item.title.toLowerCase().includes(query.toLowerCase())).map((marker) => {
                             return (
@@ -232,7 +231,7 @@ class App extends Component {
                             )
                         })}
                         </ul>
-                    </div>
+                    </nav>
                 </div>
                 <div id='map' />
             </div>

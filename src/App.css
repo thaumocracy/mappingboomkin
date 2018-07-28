@@ -1,27 +1,43 @@
 #root, #app, #map {
   height: 100vh;
+  background-color: rgb(219, 219, 217);
 }
 
 #state {
-  width: 200px;
+  width:20%;
   float: left;
   background-color: darkgray;
   margin-top:10vh;
 }
 
 #map {
-  margin-left: 200px;
+  width:80%;
 }
+
 .search__bar {
   width:100%;
   min-height:50px;
   padding:20px 0;
-  background-color: red;
+  background-color: rgb(249, 249, 247);
   border:none;
   font-size:2em;
 }
 .locations__list {
+  width:100%;
+  margin:0;
   list-style-type: none;
-  padding-left:5px;
+  padding:0;
   font-size:1.2em;
+}
+
+@media only screen and (min-width : 320px) and (max-width : 960px) {
+  #state {
+    width: 25%;
+    float: left;
+    background-color: darkgray;
+    margin-top:10vh;
+  }
+  #map {
+    width:75%;
+  }
 }
