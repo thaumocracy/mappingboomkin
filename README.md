@@ -1,7 +1,7 @@
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
 ## Info
-Simple map-API training project for Udacity.
+Simple map-API training project for Udacity,build with FourSquare free API.
 
 ## Running
 
