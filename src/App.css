@@ -15,29 +15,29 @@
 }
 
 .search__bar {
-  width:100%;
-  min-height:50px;
-  padding:20px 0;
+  width: 100%;
+  min-height: 50px;
+  padding: 20px 0;
   background-color: rgb(249, 249, 247);
-  border:none;
-  font-size:2em;
+  border: none;
+  font-size: 2em;
 }
 .locations__list {
-  width:100%;
-  margin:0;
+  width: 100%;
+  margin: 0;
   list-style-type: none;
-  padding:0;
-  font-size:1.2em;
+  padding: 0;
+  font-size: 1.2em;
 }
 
 @media only screen and (min-width : 320px) and (max-width : 960px) {
   #state {
     width: 25%;
     float: left;
-    background-color: darkgray;
-    margin-top:10vh;
+    background-color: rgb(169,169,169);
+    margin-top: 10vh;
   }
   #map {
-    width:75%;
+    width: 75%;
   }
 }

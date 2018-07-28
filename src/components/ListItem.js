@@ -7,6 +7,7 @@ class ListItem extends Component {
 
         return (
             <li
+                role={'menuitem'}
                 tabIndex={'0'}
                 className="list__item"
                 onClick={(e) => clickHandler(e)}
