@@ -81,15 +81,16 @@ class App extends Component {
             let url = `https://api.foursquare.com/v2/venues/${venueID}/likes?client_id=${clientID}&client_secret=${clientSecret}&v=20180505`;
             // let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
             fetch(url).then(response => response.json()).then((data) => {
+                console.log("Before : " + this.state.currentMarker );
                 infoWindow.setContent(data.response.likes.summary);
+                infoWindow.open(this.state.map,this.state.currentMarker);
+                console.log("After state : " + this.state.currentMarker );
             });
         }
     }
     useLikes () {
-        let { infoWindow } = this.state;
-        if(this.state.currentMarker ){
+        if(this.state.currentMarker){
             this.getExactVenue();
-            infoWindow.open(this.state.map,this.state.currentMarker);
         }
     }
 
@@ -113,7 +114,6 @@ class App extends Component {
             marker.addListener('click', function() {
                 if(joystick.state.currentMarker !== marker) {
                     marker.setAnimation(null);
-                    joystick.setState({info:null})
                 }
                 joystick.setState({
                     currentMarker : marker,
@@ -139,31 +139,22 @@ class App extends Component {
         this.setState({markers});
     };
 
-    // populateInfoWindow = () => {
-    //     let { info } = this.state;
-    //     let text;
-    //     if (this.state.info !== null) {
-    //         text = `${info} people like this place!`
-    //     } else {
-    //         text = "Sorry,likes is not loaded"
-    //     }
-    //     return text;
-    // };
-
     displayInfowindow = (event) => {
-        const { markers , infoWindow } = this.state;
+        debugger;
+        console.log("DisplayInfowindow state : " + this.state.currentMarker );
+        const { markers } = this.state;
         const markerIndex = markers.findIndex(marker => marker.title.toLowerCase() === event.target.innerText.toLowerCase());
-        this.populateInfoWindow();
-        this.setState({
-            currentMarker:markers[markerIndex]
-        });
-        if(this.state.currentMarker) {
-            infoWindow.open(this.state.map, this.state.currentMarker);
-        }
+        console.log(markerIndex);
+        this.setState({currentMarker : this.state.markers[markerIndex]});
+        console.log(this.state.markers[markerIndex]);
+        console.log("DisplayInfowindow  2 state : " + this.state.currentMarker );
+        this.useLikes();
     };
 
     handleValueChange = (event) => {
-        this.setState({query: event.target.value})
+        const { infoWindow } = this.state;
+        this.setState({query: event.target.value});
+        infoWindow.close();
     };
 
     componentDidMount() {
@@ -195,7 +186,6 @@ class App extends Component {
             });
         });
         this.makeMarkers(locations, map);
-        // this.getTips();
     }
     render() {
         let { query , markers , currentMarker , locations} = this.state;
@@ -205,9 +195,9 @@ class App extends Component {
                     markers[index].setVisible(true)
                 } else {
                     if (currentMarker === markers[index]) {
-                        this.setState({
-                            currentMarkers:null
-                        })
+                        // this.setState({
+                        //     currentMarker:null
+                        // })
                     }
                     markers[index].setVisible(false)
                 }
@@ -225,7 +215,9 @@ class App extends Component {
                     <h1>State</h1>
                     <input role="search" type='text'
                            value={this.state.value}
-                           onChange={this.handleValueChange}/>
+                           onChange={this.handleValueChange}
+                           className={'search__bar'}
+                    />
                     <p>
                         Info : {this.state.info}<br />
                         Search query: {this.state.query}<br />
@@ -239,7 +231,6 @@ class App extends Component {
                             return (
                                 <ListItem
                                     key = {marker.id}
-                                    ident = {marker.id}
                                     title = {marker.title}
                                     clickHandler = {(e) => this.displayInfowindow(e)}
                                 />
