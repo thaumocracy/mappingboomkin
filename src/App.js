@@ -74,17 +74,14 @@ class App extends Component {
 
     getExactVenue () {
         if(this.state.currentMarker){
-            let { infoWindow } = this.state
+            let { infoWindow } = this.state;
             let venueID = this.state.currentMarker.id;
             let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
             let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
             let url = `https://api.foursquare.com/v2/venues/${venueID}/likes?client_id=${clientID}&client_secret=${clientSecret}&v=20180505`;
-            // let url = "https://api.foursquare.com/v2/venues/" + venueId  + "?client_id=" + clientID + "&client_secret=" + clientSecret + "&v=20130815&ll=" + marker.position.lat() + "," + marker.position.lng() + "&limit=1" + "&radius=1";
             fetch(url).then(response => response.json()).then((data) => {
-                console.log("Before : " + this.state.currentMarker );
                 infoWindow.setContent(data.response.likes.summary);
                 infoWindow.open(this.state.map,this.state.currentMarker);
-                console.log("After state : " + this.state.currentMarker );
             });
         }
     }
@@ -140,15 +137,13 @@ class App extends Component {
     };
 
     displayInfowindow = (event) => {
-        debugger;
-        console.log("DisplayInfowindow state : " + this.state.currentMarker );
         const { markers } = this.state;
         const markerIndex = markers.findIndex(marker => marker.title.toLowerCase() === event.target.innerText.toLowerCase());
-        console.log(markerIndex);
-        this.setState({currentMarker : this.state.markers[markerIndex]});
-        console.log(this.state.markers[markerIndex]);
-        console.log("DisplayInfowindow  2 state : " + this.state.currentMarker );
-        this.useLikes();
+        this.setState({
+            currentMarker: markers[markerIndex]
+        }, function () {
+            this.useLikes();
+        });
     };
 
     handleValueChange = (event) => {
@@ -195,9 +190,9 @@ class App extends Component {
                     markers[index].setVisible(true)
                 } else {
                     if (currentMarker === markers[index]) {
-                        // this.setState({
-                        //     currentMarker:null
-                        // })
+                        this.setState({
+                            currentMarker:null
+                        })
                     }
                     markers[index].setVisible(false)
                 }
