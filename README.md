@@ -9,6 +9,16 @@ Clone this directory
 
 Run terminal in root folder
 
+start development server by using : npm start
+
+visit your localhost:3000
+
+Note : ServiceWorker is active only on production build, to use this you need :
+
+run build command by using : npm run build
+
+cd to the build directory
+
 install static server in terminal : npm install -g serve
 
 run it from terminal : serve -s build
