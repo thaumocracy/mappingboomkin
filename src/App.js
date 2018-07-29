@@ -6,7 +6,7 @@ import ListItem from "./components/ListItem";
 class App extends Component {
         state = {
             query: "",
-            map : {},
+            map : null,
             zoom: 12,
             infoWindow : new window.google.maps.InfoWindow(),
             maptype: 'roadmap',
@@ -74,18 +74,28 @@ class App extends Component {
 
     getExactVenue () {
         // checking current target and populate infoWindow with according content
+        const joystick = this;
         if(this.state.currentMarker){
-            let { infoWindow } = this.state;
-            let venueID = this.state.currentMarker.id;
+            let { infoWindow } = joystick.state;
+            let venueID = joystick.state.currentMarker.id;
             let clientID = "AZREHK4CD0M2LQ0S0WDTBURVJL3USHZFFXK4EJYBNA3BUZ42";
             let clientSecret = "CFEODDWIQNMOOUSLPIU4IAIRP2O0KIKIEXPTRA21345BI1MC";
             let url = `https://api.foursquare.com/v2/venues/${venueID}/likes?client_id=${clientID}&client_secret=${clientSecret}&v=20180505`;
-            fetch(url).then(response => response.json()).then((data) => {
-                infoWindow.setContent(data.response.likes.summary);
-                infoWindow.open(this.state.map,this.state.currentMarker);
-            }).catch(function () {
-               infoWindow.setContent("Sorry data can't be loaded");
-            });
+            fetch(url)
+                .then(function(response){
+                    if(response.status !== 200){
+                        if(response.status === 400){
+                            alert("Foursquare authorization failed")
+                        } else {
+                            alert("Sorry , something is  broken");
+                        }
+                    } else {
+                        response.json().then((data) => {
+                            infoWindow.setContent(data.response.likes.summary);
+                            infoWindow.open(joystick.state.map,joystick.state.currentMarker);}
+                        );
+                    }
+                })
         }
     }
     useLikes () {
@@ -93,12 +103,18 @@ class App extends Component {
             this.getExactVenue();
         }
     }
-
+    mapTest () {
+        window.gm_authFailure = function() {
+            document.getElementById("map").style.display = "none";
+            document.getElementById("fallback__map").style.display = "block"
+        }
+    }
     makeMarkers (locations , map) {
         // making and adding listeners to all markers
         let { infoWindow } = this.state;
         let markers = [];
         let joystick = this;
+        this.mapTest();
         for(let i = 0;i < locations.length;i++){
             let position = locations[i].location;
             let title = locations[i].name;
@@ -185,7 +201,7 @@ class App extends Component {
                 currentMarker : null,
             });
         });
-        this.makeMarkers(locations, map);
+        map ?  this.makeMarkers(locations, map) : alert( "Google maps is failed")
     }
     render() {
         let { query , markers , currentMarker , locations} = this.state;
@@ -220,7 +236,10 @@ class App extends Component {
                            placeholder={'Search ... '}
                     />
                     <nav>
-                        <ul className={'locations__list'}>
+                        <ul
+                            className={'locations__list'}
+                            role={'menu'}
+                        >
                         {this.state.markers.filter(item => item.title.toLowerCase().includes(query.toLowerCase())).map((marker) => {
                             return (
                                 <ListItem
@@ -234,6 +253,9 @@ class App extends Component {
                     </nav>
                 </div>
                 <div id='map' />
+                <div className="id" id="fallback__map" style={{display:'none'}}>
+                    <img src={require('./fallback-image.jpg')} alt="static map"/>
+                </div>
             </div>
         );
     }
